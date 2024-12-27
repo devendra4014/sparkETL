@@ -1,0 +1,187 @@
+{
+
+  "projectId" : "123",
+  "projectName": "pro",
+  "componentId": "RawcA",
+  "componentName": "EAFG",
+  "connections": [
+    {
+      "connectionId": "1",
+      "connectionName": "aws conn",
+      "params" : [
+        {
+          "key": "region",
+          "value": "us-east-1"
+        },
+        {
+          "key": "accessKey",
+          "value": "kafbnLKAMLKFMLKWNKLNQW"
+        },
+        {
+          "key": "secreteKey",
+          "value": "ADKNFksnfnfalmfAMD+NADNDKJ+afnanKANDDNl"
+        }
+      ]
+
+    },
+    {
+      "connectionId": "2",
+      "connectionName": "file connection",
+      "params" : [
+        {
+          "key": "fileUrl",
+          "value": "file:///"
+        }
+      ]
+
+    }
+  ],
+  "sources": [
+    {
+      "sourceName" : "S3 Node",
+      "sourceType" : "S3",
+      "dataFrameName" : "testDF",
+      "connectionId" : "1",
+      "params" : [
+        {
+          "key": "bucket",
+          "value": "working-bucket01"
+        },
+        {
+          "key": "object",
+          "value": "input/data/raw_data/"
+        },
+        {
+          "key": "format",
+          "value": "csv"
+        }
+      ],
+      "options": [
+        {
+          "key": "delimiter",
+          "value": ","
+        }
+      ]
+    }
+  ],
+  "pipelines" : [
+    {
+      "pipelineName": "test Pipeline",
+      "inputDataFrames": ["testDF"],
+      "retainColumns": {
+      },
+      "outputDataFrameName": "transformedDF",
+      "transformations": [
+        {
+          "transformationType": "ColumnLevel",
+          "inputDataframe": "testDF",
+          "operations": [
+            {
+              "function": "upper",
+              "parameters": null
+            },
+            {
+              "function": "tokenCount",
+              "parameters": null
+            }
+          ],
+          "columnName": "address",
+          "outputColumn": "token_count"
+        },
+        {
+          "transformationType": "ColumnLevel",
+          "inputDataframe": "previousDF",
+          "columnName": "subscriber_name",
+          "outputColumn": "loweCaseName",
+          "operations": [
+            {
+              "function": "lower",
+              "parameters": null
+            }
+          ]
+
+        }
+
+      ]
+    },
+    {
+      "pipelineName": "test Pipeline",
+      "inputDataFrames": ["testDF"],
+      "retainColumns": {
+
+      },
+      "outputDataFrameName": "row_count_df",
+      "transformations": [
+        {
+          "transformationType": "ColumnLevel",
+          "inputDataframe": "testDF",
+          "operations": [
+            {
+              "function": "upper",
+              "parameters": null
+            },
+            {
+              "function": "tokenCount",
+              "parameters": null
+            }
+          ],
+          "columnName": "address",
+          "outputColumn": "token_count"
+        },
+        {
+          "transformationType":  "DataframeLevel",
+          "function": "filterFunction",
+          "params": [
+            {
+              "key": "condition",
+              "value": "token_count < 14"
+            }
+          ],
+          "functionDataFrames":
+          {
+            "filterDF": "previousDF"
+          }
+
+        }
+      ]
+    }
+  ],
+  "targets" : [
+    {
+      "targetName" : "test",
+      "targetType" : "file",
+      "dataframe" : "row_count_df",
+      "connectionId": "2",
+      "params" : [
+        {
+          "key": "format",
+          "value": "csv"
+        },
+        {
+          "key": "path",
+          "value": "C:\\work_mpokket\\test\\data01\\"
+        }
+      ]
+    },
+    {
+      "targetName" : "S3 Target",
+      "targetType" : "S3",
+      "dataframe" : "transformedDF",
+      "connectionId": "1",
+      "params" : [
+        {
+          "key": "bucket",
+          "value": "working-bucket01-"
+        },
+        {
+          "key": "object",
+          "value": "test/data01/"
+        },
+        {
+          "key": "format",
+          "value": "csv"
+        }
+      ]
+    }
+  ]
+}
